@@ -1,7 +1,14 @@
 FROM php:8.4-cli
 
 RUN apt-get update && apt-get install -y \
-    git unzip curl libzip-dev zip nodejs npm
+    git \
+    unzip \
+    curl \
+    libzip-dev \
+    libpq-dev \
+    zip \
+    nodejs \
+    npm
 
 RUN docker-php-ext-install pdo pdo_pgsql zip
 
@@ -18,4 +25,4 @@ RUN npm run build
 
 EXPOSE 10000
 
-CMD php artisan serve --host=0.0.0.0 --port=10000
+CMD php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=10000
