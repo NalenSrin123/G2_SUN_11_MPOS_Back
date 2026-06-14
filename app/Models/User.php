@@ -2,17 +2,41 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Laravel\Sanctum\HasApiTokens;
 
-class User extends Model
+class User extends Authenticatable
 {
-    //
-    protected $table = 'user';
+    use HasApiTokens, HasFactory;
+
+    protected $table = 'admins';
     protected $fillable = [
         'name',
         'email',
         'password_hash',
         'role',
-        'updated_at',
     ];
+
+    public $timestamps = true;
+
+    public function otpTokens()
+    {
+        return $this->hasMany(Otp_token::class, 'admin_id');
+    }
+
+    public function passwordResetTokens()
+    {
+        return $this->hasMany(Password_reset_token::class, 'admin_id');
+    }
+
+    /**
+     * Get the password for the user.
+     *
+     * @return string
+     */
+    public function getAuthPassword()
+    {
+        return $this->password_hash;
+    }
 }

@@ -6,9 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class RevenueReport extends Model
 {
-    //
-
     protected $table = 'revenue_report';
+
+    public $timestamps = false;
+
     protected $fillable = [
         'admin_id',
         'type',
