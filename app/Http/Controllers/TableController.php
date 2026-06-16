@@ -8,8 +8,7 @@ use Illuminate\Support\Facades\Storage;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class TableController extends Controller
-{
-    public function index()
+{    public function index()
     {
         $tables = RestaurantTable::orderBy('table_number')->get();
 
