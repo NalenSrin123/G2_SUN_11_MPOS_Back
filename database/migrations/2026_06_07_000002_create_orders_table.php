@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
             $table->foreignId('table_id')->constrained('restaurant_tables')->cascadeOnUpdate()->restrictOnDelete();
-            $table->foreignId('admin_id')->constrained('admins')->cascadeOnUpdate()->restrictOnDelete();
+            $table->foreignId('admin_id')->constrained('user')->cascadeOnUpdate()->restrictOnDelete();
             $table->string('status');
             $table->decimal('total_amount', 10, 2)->default(0);
             $table->string('payment_method')->nullable();

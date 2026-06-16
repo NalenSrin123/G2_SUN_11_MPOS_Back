@@ -25,7 +25,7 @@ class Payment extends Model
 
     public function confirmedBy()
     {
-        return $this->belongsTo(Admin::class, 'confirmed_by');
+        return $this->belongsTo(User::class, 'confirmed_by');
     }
 
     public function receipt()
