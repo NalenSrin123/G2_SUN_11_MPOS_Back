@@ -9,6 +9,7 @@ use App\Models\Password_reset_token;
 use App\Mail\SendOtpMail;
 use App\Mail\SendPasswordResetMail;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
@@ -76,33 +77,63 @@ class AuthController extends Controller
     }
 
     /**
-     * Send OTP specifically for password reset (tags purpose)
+     * Login with email and password, then send OTP if credentials are valid.
      */
-    public function sendOtpForReset(Request $request)
+    public function login(Request $request)
     {
-        // Ensure purpose is set to password_reset for this flow
-        $request->merge(['purpose' => 'password_reset']);
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|email',
+            'password' => 'required|string',
+        ]);
 
-        return $this->sendOtp($request);
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation error',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $user = User::where('email', $request->email)->first();
+
+        if (!$user || !Hash::check($request->password, $user->password_hash)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid email or password. Please try again.'
+            ], 401);
+        }
+
+        try {
+            $this->sendOtpToUser($user);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to send OTP email. Please check your SMTP configuration.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Login successful. OTP sent to your email.'
+        ]);
     }
 
     /**
-     * Show the forgot password form.
+     * Create and email OTP for the given admin user.
      */
-    public function showForgotPasswordForm()
+    protected function sendOtpToUser(User $user)
     {
-        return view('auth.forgot_password_form');
-    }
+        $otp = sprintf("%06d", mt_rand(100000, 999999));
 
-    /**
-     * Show a simple reset password form when user clicks the emailed link.
-     */
-    public function showResetForm(Request $request, ?string $token = null)
-    {
-        $token = $token ?: $request->query('token');
-        $email = $request->query('email');
+        Otp_token::create([
+            'admin_id' => $user->id,
+            'token' => $otp,
+            'is_used' => false,
+            'expires_at' => Carbon::now()->addMinutes(2),
+        ]);
 
-        return view('auth.reset_password_form', compact('token', 'email'));
+        Mail::to($user->email)->send(new SendOtpMail($otp));
     }
 
     /**
