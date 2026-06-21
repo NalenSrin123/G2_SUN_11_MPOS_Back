@@ -8,9 +8,18 @@ RUN apt-get update && apt-get install -y \
     libpq-dev \
     zip \
     nodejs \
-    npm
+    npm \
+    libpng-dev \
+    libjpeg62-turbo-dev \
+    libfreetype6-dev
 
-RUN docker-php-ext-install pdo pdo_pgsql zip
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg
+
+RUN docker-php-ext-install \
+    pdo \
+    pdo_pgsql \
+    zip \
+    gd
 
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 

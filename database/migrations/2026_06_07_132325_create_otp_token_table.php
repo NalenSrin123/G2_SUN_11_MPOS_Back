@@ -13,10 +13,11 @@ return new class extends Migration
     {
         Schema::create('otp_token', function (Blueprint $table) {
             $table->id();
-            $table->integer('admin_id');
+            $table->foreignId('admin_id')->constrained('admins')->cascadeOnUpdate()->cascadeOnDelete();
             $table->string('token');
             $table->boolean('is_used')->default(false);
             $table->timestamp('expires_at');
+            $table->timestamp('created_at')->useCurrent();
         });
     }
 

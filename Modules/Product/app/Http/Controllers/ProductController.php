@@ -3,54 +3,129 @@
 namespace Modules\Product\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Models\Product;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
+use Modules\Product\Http\Requests\StoreProductRequest;
+use Modules\Product\Http\Requests\UpdateProductRequest;
+use Modules\Product\Transformers\ProductResource;
 
 class ProductController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Display a listing of products.
      */
-    public function index()
+    public function index(Request $request): JsonResponse
     {
-        return view('product::index');
+        $query = Product::with('category');
+
+        // Search by name (ensure it's a string)
+        if ($request->has('search') && is_string($request->search)) {
+            $query->where('name', 'like', '%' . $request->search . '%');
+        }
+
+        // Filter by category
+        if ($request->has('category_id')) {
+            $query->where('category_id', $request->category_id);
+        }
+
+        // Filter by active status
+        if ($request->has('is_active')) {
+            $query->where('is_active', filter_var($request->is_active, FILTER_VALIDATE_BOOLEAN));
+        }
+
+        $products = $query->orderBy('id', 'desc')->get();
+
+        return response()->json([
+            'success' => true,
+            'data'    => ProductResource::collection($products),
+        ]);
     }
 
     /**
-     * Show the form for creating a new resource.
+     * Store a newly created product.
      */
-    public function create()
+    public function store(StoreProductRequest $request): JsonResponse
     {
-        return view('product::create');
+        $data = $request->validated();
+
+        // Make sure we have a name to generate a slug from; fall back to timestamp
+        $name = $data['name'] ?? $request->input('name') ?? '';
+        $data['slug'] = Str::slug($name ?: (string) time());
+
+        // Ensure slug uniqueness (only run if slug is non-empty)
+        $originalSlug = $data['slug'];
+        $counter = 1;
+        if ($data['slug'] !== '') {
+            while (Product::where('slug', $data['slug'])->exists()) {
+                $data['slug'] = $originalSlug . '-' . $counter++;
+            }
+        }
+
+        $product = Product::create($data);
+        $product->load('category');
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Product created successfully',
+            'data'    => new ProductResource($product),
+        ], 201);
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Display the specified product with its category.
      */
-    public function store(Request $request) {}
-
-    /**
-     * Show the specified resource.
-     */
-    public function show($id)
+    public function show(Product $product): JsonResponse
     {
-        return view('product::show');
+        $product->load('category');
+
+        return response()->json([
+            'success' => true,
+            'data'    => new ProductResource($product),
+        ]);
     }
 
     /**
-     * Show the form for editing the specified resource.
+     * Update the specified product.
      */
-    public function edit($id)
+    public function update(UpdateProductRequest $request, Product $product): JsonResponse
     {
-        return view('product::edit');
+        $data = $request->validated();
+
+        // Regenerate slug if name changed
+        if (isset($data['name']) && $data['name'] !== $product->name) {
+            $data['slug'] = Str::slug($data['name'] ?? '');
+
+            $originalSlug = $data['slug'];
+            $counter = 1;
+            if ($data['slug'] !== '') {
+                while (Product::where('slug', $data['slug'])->where('id', '!=', $product->id)->exists()) {
+                    $data['slug'] = $originalSlug . '-' . $counter++;
+                }
+            }
+        }
+
+        $product->update($data);
+        $product->load('category');
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Product updated successfully',
+            'data'    => new ProductResource($product),
+        ]);
     }
 
     /**
-     * Update the specified resource in storage.
+     * Remove the specified product.
      */
-    public function update(Request $request, $id) {}
+    public function destroy(Product $product): JsonResponse
+    {
+        $product->delete();
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy($id) {}
+        return response()->json([
+            'success' => true,
+            'message' => 'Product deleted successfully',
+        ]);
+    }
 }
