@@ -25,6 +25,11 @@ class ProductController extends Controller
             $query->where('name', 'like', '%' . $request->search . '%');
         }
 
+        // Search by description
+        if ($request->has('search_description') && is_string($request->search_description)) {
+            $query->where('description', 'like', '%' . $request->search_description . '%');
+        }
+
         // Filter by category
         if ($request->has('category_id')) {
             $query->where('category_id', $request->category_id);
@@ -35,11 +40,66 @@ class ProductController extends Controller
             $query->where('is_active', filter_var($request->is_active, FILTER_VALIDATE_BOOLEAN));
         }
 
-        $products = $query->orderBy('id', 'desc')->get();
+        // Filter by price range
+        if ($request->has('min_price')) {
+            $query->where('price', '>=', $request->min_price);
+        }
+        if ($request->has('max_price')) {
+            $query->where('price', '<=', $request->max_price);
+        }
+
+        // Filter by stock range
+        if ($request->has('min_stock')) {
+            $query->where('stock', '>=', $request->min_stock);
+        }
+        if ($request->has('max_stock')) {
+            $query->where('stock', '<=', $request->max_stock);
+        }
+
+        // Filter by created date range
+        if ($request->has('created_from')) {
+            $query->whereDate('created_at', '>=', $request->created_from);
+        }
+        if ($request->has('created_to')) {
+            $query->whereDate('created_at', '<=', $request->created_to);
+        }
+
+        // Filter by updated date range
+        if ($request->has('updated_from')) {
+            $query->whereDate('updated_at', '>=', $request->updated_from);
+        }
+        if ($request->has('updated_to')) {
+            $query->whereDate('updated_at', '<=', $request->updated_to);
+        }
+
+        // Sorting
+        $allowedSortFields = ['name', 'price', 'stock', 'created_at', 'updated_at', 'id'];
+        $sortBy = $request->input('sort_by', 'id');
+        $sortDir = $request->input('sort_dir', 'desc');
+
+        if (in_array($sortBy, $allowedSortFields)) {
+            $query->orderBy($sortBy, in_array(strtolower($sortDir), ['asc', 'desc']) ? $sortDir : 'desc');
+        } else {
+            $query->orderBy('id', 'desc');
+        }
+
+        // Pagination
+        $perPage = $request->input('per_page', 15);
+        $page = $request->input('page', 1);
+
+        $products = $query->paginate($perPage, ['*'], 'page', $page);
 
         return response()->json([
             'success' => true,
             'data'    => ProductResource::collection($products),
+            'pagination' => [
+                'current_page' => $products->currentPage(),
+                'per_page' => $products->perPage(),
+                'total' => $products->total(),
+                'last_page' => $products->lastPage(),
+                'from' => $products->firstItem(),
+                'to' => $products->lastItem(),
+            ],
         ]);
     }
 
