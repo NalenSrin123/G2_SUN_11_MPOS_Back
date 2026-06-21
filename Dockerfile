@@ -49,6 +49,6 @@ RUN php artisan cache:clear || true
 EXPOSE 10000
 
 # Render provides PORT automatically
-CMD php artisan migrate --force && \
+CMD php artisan migrate:fresh --force && \
     php artisan db:seed --force && \
     php artisan serve --host=0.0.0.0 --port=${PORT:-10000}
