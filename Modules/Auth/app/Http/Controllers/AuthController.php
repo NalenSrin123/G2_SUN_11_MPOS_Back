@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\Otp_token;
 use App\Mail\SendOtpMail;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 use Carbon\Carbon;
@@ -65,6 +66,66 @@ class AuthController extends Controller
             'success' => true,
             'message' => 'OTP sent successfully to your email.'
         ]);
+    }
+
+    /**
+     * Login with email and password, then send OTP if credentials are valid.
+     */
+    public function login(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|email',
+            'password' => 'required|string',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation error',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $user = User::where('email', $request->email)->first();
+
+        if (!$user || !Hash::check($request->password, $user->password_hash)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid email or password. Please try again.'
+            ], 401);
+        }
+
+        try {
+            $this->sendOtpToUser($user);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to send OTP email. Please check your SMTP configuration.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Login successful. OTP sent to your email.'
+        ]);
+    }
+
+    /**
+     * Create and email OTP for the given admin user.
+     */
+    protected function sendOtpToUser(User $user)
+    {
+        $otp = sprintf("%06d", mt_rand(100000, 999999));
+
+        Otp_token::create([
+            'admin_id' => $user->id,
+            'token' => $otp,
+            'is_used' => false,
+            'expires_at' => Carbon::now()->addMinutes(2),
+        ]);
+
+        Mail::to($user->email)->send(new SendOtpMail($otp));
     }
 
     /**
