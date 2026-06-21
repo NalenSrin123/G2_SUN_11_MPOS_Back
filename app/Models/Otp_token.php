@@ -14,6 +14,7 @@ class Otp_token extends Model
         'admin_id',
         'token',
         'is_used',
+        'purpose',
         'expires_at',
     ];
 

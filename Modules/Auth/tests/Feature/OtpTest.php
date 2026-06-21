@@ -59,7 +59,7 @@ class OtpTest extends TestCase
         $response->assertStatus(404)
             ->assertJson([
                 'success' => false,
-                'message' => 'Admin user with this email not found.'
+                'message' => 'Admin account with this email not found.'
             ]);
     }
 
