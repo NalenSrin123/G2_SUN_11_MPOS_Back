@@ -1,14 +1,16 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace Modules\Table\Http\Controllers;
 
+use App\Http\Controllers\Controller;
 use App\Models\RestaurantTable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class TableController extends Controller
-{    public function index()
+{
+    public function index()
     {
         $tables = RestaurantTable::orderBy('table_number')->get();
 
