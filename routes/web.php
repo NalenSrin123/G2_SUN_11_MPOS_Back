@@ -40,7 +40,7 @@ Route::get('/email/verify/{id}/{hash}', function (Request $request, $id, $hash) 
         'admin_id' => $user->id,
         'token' => $token,
         'is_used' => false,
-        'expires_at' => Carbon::now()->addMinutes(config('auth.passwords.users.expire', 60)),
+        'expires_at' => Carbon::now()->addMinutes(2),
     ]);
 
     $resetUrl = rtrim(config('app.url'), '/') . '/reset-password/' . $token . '?email=' . urlencode($user->email);

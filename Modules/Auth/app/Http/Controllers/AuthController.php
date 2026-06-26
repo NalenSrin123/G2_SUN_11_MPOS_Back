@@ -168,7 +168,7 @@ class AuthController extends Controller
                 'admin_id' => $user->id,
                 'token' => $resetToken,
                 'is_used' => false,
-                'expires_at' => Carbon::now()->addMinutes(config('auth.passwords.users.expire', 60)),
+                'expires_at' => Carbon::now()->addMinutes(2),
             ]);
 
             // If client asked to send the email, keep existing behavior.
@@ -368,7 +368,7 @@ class AuthController extends Controller
             'admin_id' => $user->id,
             'token' => $token,
             'is_used' => false,
-            'expires_at' => Carbon::now()->addMinutes(config('auth.passwords.users.expire', 60)),
+            'expires_at' => Carbon::now()->addMinutes(2),
         ]);
 
         return $token;
