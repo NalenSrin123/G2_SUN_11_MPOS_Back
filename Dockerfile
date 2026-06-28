@@ -6,8 +6,6 @@ RUN apt-get update && apt-get install -y \
     unzip \
     curl \
     zip \
-    nodejs \
-    npm \
     libzip-dev \
     libpq-dev \
     libpng-dev \
@@ -41,16 +39,9 @@ RUN composer install \
     --optimize-autoloader \
     --no-interaction
 
-# Build frontend
-RUN npm install
-RUN npm run build
-
-# Laravel optimization
-RUN php artisan config:clear && \
-    php artisan cache:clear
-
 EXPOSE 10000
 
-CMD php artisan migrate --force && \
+CMD php artisan config:clear && \
+    php artisan migrate --force && \
     php artisan db:seed --force && \
-    php artisan serve --host=0.0.0.0 --port=${PORT:-10000}
+    php artisan serve --host=0.0.0.0 --port=$PORT
