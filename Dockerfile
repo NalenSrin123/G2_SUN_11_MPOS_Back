@@ -1,5 +1,6 @@
 FROM php:8.4-cli
 
+# Install system packages
 RUN apt-get update && apt-get install -y \
     git \
     unzip \
@@ -12,8 +13,11 @@ RUN apt-get update && apt-get install -y \
     libpng-dev \
     libjpeg62-turbo-dev \
     libfreetype6-dev \
+    ca-certificates \
+    openssl \
     && rm -rf /var/lib/apt/lists/*
 
+# Install PHP extensions
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg
 
 RUN docker-php-ext-install \
@@ -22,22 +26,31 @@ RUN docker-php-ext-install \
     zip \
     gd
 
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+# Install Composer
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
+# Working directory
 WORKDIR /app
 
+# Copy project
 COPY . .
 
+# Install PHP dependencies
 RUN composer install \
     --no-dev \
     --optimize-autoloader \
     --no-interaction
 
+# Build frontend
 RUN npm install
 RUN npm run build
 
+# Laravel optimization
+RUN php artisan config:clear && \
+    php artisan cache:clear
+
 EXPOSE 10000
 
-CMD php artisan migrate:fresh --force && \
+CMD php artisan migrate --force && \
     php artisan db:seed --force && \
-    php artisan serve --host=0.0.0.0 --port=$PORT
+    php artisan serve --host=0.0.0.0 --port=${PORT:-10000}
