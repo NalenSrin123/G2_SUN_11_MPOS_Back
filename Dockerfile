@@ -4,15 +4,15 @@ FROM php:8.4-cli
 RUN apt-get update && apt-get install -y \
     git \
     unzip \
-    curl \
     zip \
+    curl \
+    ca-certificates \
+    openssl \
     libzip-dev \
     libpq-dev \
     libpng-dev \
     libjpeg62-turbo-dev \
     libfreetype6-dev \
-    ca-certificates \
-    openssl \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install \
         pdo \
@@ -24,22 +24,24 @@ RUN apt-get update && apt-get install -y \
 # Install Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-# Set working directory
 WORKDIR /app
 
-# Copy project
-COPY . .
+# Copy composer files first
+COPY composer.json composer.lock ./
 
-# Install PHP dependencies
+# Configure Composer
+RUN composer config -g process-timeout 2000
+RUN composer config -g preferred-install source
+
+# Install dependencies
 RUN composer install \
     --no-dev \
+    --prefer-source \
     --optimize-autoloader \
     --no-interaction
 
-# Cache Laravel config
-RUN php artisan config:clear || true
-RUN php artisan route:clear || true
-RUN php artisan view:clear || true
+# Copy the rest of the project
+COPY . .
 
 EXPOSE 10000
 
