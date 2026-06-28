@@ -10,7 +10,8 @@ class Order extends Model
 {
     protected $table = 'orders';
 
-    public const UPDATED_AT = null;
+    // public const UPDATED_AT = null;
+    const UPDATED_AT = null;
 
     protected $fillable = [
         'table_id',

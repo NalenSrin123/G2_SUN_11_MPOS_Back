@@ -21,24 +21,67 @@ class OrderController extends Controller
         return response()->json($order);
     }
 
+    // public function store(Request $request)
+    // {
+    //     $request->validate([
+    //         'table_id'       => 'required|exists:restaurant_tables,id',
+    //         'admin_id'       => 'required|exists:admins,id',
+    //         'payment_method' => 'nullable|string',
+    //     ]);
+
+    //     $order = Order::create([
+    //         'table_id'       => $request->table_id,
+    //         'admin_id'       => $request->admin_id,
+    //         'status'         => 'pending',
+    //         'total_amount'   => 0,
+    //         'payment_method' => $request->payment_method,
+    //     ]);
+
+    //     return response()->json($order, 201);
+    // }
+
+
+
     public function store(Request $request)
-    {
-        $request->validate([
-            'table_id'       => 'required|exists:restaurant_tables,id',
-            'admin_id'       => 'required|exists:admins,id',
-            'payment_method' => 'nullable|string',
-        ]);
+{
+    $request->validate([
+        'table_id'       => 'required|exists:restaurant_tables,id',
+        'admin_id'       => 'required|exists:admins,id',
+        'payment_method' => 'nullable|string',
+    ]);
 
-        $order = Order::create([
-            'table_id'       => $request->table_id,
-            'admin_id'       => $request->admin_id,
-            'status'         => 'pending',
-            'total_amount'   => 0,
-            'payment_method' => $request->payment_method,
-        ]);
+    // 1. Check database details live during the request
+    $dbName = \Illuminate\Support\Facades\DB::connection()->getDatabaseName();
+    $dbPort = \Illuminate\Support\Facades\DB::connection()->getConfig('port');
 
-        return response()->json($order, 201);
+    // 2. Instantiate manually and explicitly save to look for errors
+    $order = new Order();
+    $order->table_id = $request->table_id;
+    $order->admin_id = $request->admin_id;
+    $order->status = 'pending';
+    $order->total_amount = 0;
+    $order->payment_method = $request->payment_method;
+
+    try {
+        // saveOrFail() forces an exception if the database rolls back
+        $order->saveOrFail();
+        
+        return response()->json([
+            'status' => 'Success',
+            'message' => 'Order successfully saved according to Eloquent!',
+            'active_database' => $dbName,
+            'active_port' => $dbPort,
+            'saved_data' => $order
+        ], 201);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'status' => 'Failed',
+            'message' => 'The database explicitly rejected the save!',
+            'error' => $e->getMessage()
+        ], 500);
     }
+}
 
     public function update(Request $request, $id)
     {
