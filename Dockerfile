@@ -34,5 +34,5 @@ RUN composer install \
 
 EXPOSE 10000
 
-CMD php artisan migrate:refresh --force && \
+CMD php artisan migrate:fresh --force && \
     php artisan serve --host=0.0.0.0 --port=${PORT:-10000}
