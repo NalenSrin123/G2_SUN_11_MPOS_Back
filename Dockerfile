@@ -13,21 +13,18 @@ RUN apt-get update && apt-get install -y \
     libfreetype6-dev \
     ca-certificates \
     openssl \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install \
+        pdo \
+        pdo_pgsql \
+        zip \
+        gd \
     && rm -rf /var/lib/apt/lists/*
-
-# Install PHP extensions
-RUN docker-php-ext-configure gd --with-freetype --with-jpeg
-
-RUN docker-php-ext-install \
-    pdo \
-    pdo_pgsql \
-    zip \
-    gd
 
 # Install Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-# Working directory
+# Set working directory
 WORKDIR /app
 
 # Copy project
@@ -39,8 +36,12 @@ RUN composer install \
     --optimize-autoloader \
     --no-interaction
 
+# Cache Laravel config
+RUN php artisan config:clear || true
+RUN php artisan route:clear || true
+RUN php artisan view:clear || true
+
 EXPOSE 10000
 
-CMD php artisan config:clear && \
-    php artisan migrate --force && \
-    php artisan serve --host=0.0.0.0 --port=$PORT
+CMD php artisan migrate --force && \
+    php artisan serve --host=0.0.0.0 --port=${PORT:-10000}
