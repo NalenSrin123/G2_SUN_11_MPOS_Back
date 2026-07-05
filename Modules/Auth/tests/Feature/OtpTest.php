@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Models\Otp_token;
 use App\Mail\SendOtpMail;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
 
@@ -45,6 +46,38 @@ class OtpTest extends TestCase
         Mail::assertSent(SendOtpMail::class, function ($mail) use ($user) {
             return $mail->hasTo($user->email);
         });
+    }
+
+    /**
+     * Test login skips OTP and returns the admin payload when OTP login is disabled.
+     */
+    public function test_login_skips_otp_and_returns_admin_payload_when_disabled()
+    {
+        Mail::fake();
+
+        $user = User::factory()->create([
+            'email' => 'login-admin@example.com',
+            'password_hash' => Hash::make('password123'),
+        ]);
+
+        $response = $this->postJson('/api/v1/auth/login', [
+            'email' => 'login-admin@example.com',
+            'password' => 'password123',
+        ]);
+
+        $response->assertStatus(200)
+            ->assertJson([
+                'success' => true,
+                'message' => 'Login successful.',
+                'admin' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'role' => $user->role,
+                ],
+            ]);
+
+        Mail::assertNothingSent();
     }
 
     /**
