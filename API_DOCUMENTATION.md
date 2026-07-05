@@ -12,25 +12,16 @@ Currently, no authentication is required (auth:sanctum middleware removed for te
 
 ## Categories API
 
-### 1. List Categories
+### 1. Get All Categories
 **Endpoint:** `GET /categories`
 
 **Query Parameters:**
-- `search` (string) - Search by name
-- `search_description` (string) - Search by description
-- `is_active` (boolean) - Filter by active status
-- `created_from` (date) - Filter by created date from (YYYY-MM-DD)
-- `created_to` (date) - Filter by created date to (YYYY-MM-DD)
-- `updated_from` (date) - Filter by updated date from (YYYY-MM-DD)
-- `updated_to` (date) - Filter by updated date to (YYYY-MM-DD)
-- `sort_by` (string) - Sort by field: `name`, `created_at`, `updated_at`, `id` (default: `id`)
-- `sort_dir` (string) - Sort direction: `asc`, `desc` (default: `desc`)
-- `page` (integer) - Page number (default: `1`)
-- `per_page` (integer) - Items per page (default: `15`)
+- `search` (string, optional) - Search by name
 
 **Example Request:**
 ```bash
-GET http://127.0.0.1:3000/api/v1/categories?search=category&is_active=true&sort_by=name&sort_dir=asc&page=1&per_page=10
+GET http://127.0.0.1:3000/api/v1/categories
+GET http://127.0.0.1:3000/api/v1/categories?search=category
 ```
 
 **Example Response:**
@@ -47,61 +38,25 @@ GET http://127.0.0.1:3000/api/v1/categories?search=category&is_active=true&sort_
       "created_at": "2026-06-14T05:41:25.000000Z",
       "updated_at": "2026-06-21T05:19:43.000000Z"
     }
-  ],
-  "pagination": {
-    "current_page": 1,
-    "per_page": 10,
-    "total": 1,
-    "last_page": 1,
-    "from": 1,
-    "to": 1
-  }
+  ]
 }
 ```
 
 **Fetch API Example:**
 ```javascript
-fetch('http://127.0.0.1:3000/api/v1/categories?page=1&per_page=10&sort_by=name&sort_dir=asc')
+fetch('http://127.0.0.1:3000/api/v1/categories')
+  .then(response => response.json())
+  .then(data => console.log(data));
+
+// With search
+fetch('http://127.0.0.1:3000/api/v1/categories?search=category')
   .then(response => response.json())
   .then(data => console.log(data));
 ```
 
 ---
 
-### 2. Get Single Category
-**Endpoint:** `GET /categories/{id}`
-
-**Example Request:**
-```bash
-GET http://127.0.0.1:3000/api/v1/categories/2
-```
-
-**Example Response:**
-```json
-{
-  "success": true,
-  "data": {
-    "id": 2,
-    "name": "Updated Category",
-    "slug": "updated-category",
-    "description": "Updated description",
-    "is_active": true,
-    "created_at": "2026-06-14T05:41:25.000000Z",
-    "updated_at": "2026-06-21T05:19:43.000000Z"
-  }
-}
-```
-
-**Fetch API Example:**
-```javascript
-fetch('http://127.0.0.1:3000/api/v1/categories/2')
-  .then(response => response.json())
-  .then(data => console.log(data));
-```
-
----
-
-### 3. Create Category
+### 2. Create Category
 **Endpoint:** `POST /categories`
 
 **Request Body:**
@@ -166,7 +121,7 @@ fetch('http://127.0.0.1:3000/api/v1/categories', {
 
 ---
 
-### 4. Update Category
+### 3. Update Category by ID
 **Endpoint:** `PUT /categories/{id}`
 
 **Request Body:**
@@ -233,7 +188,7 @@ fetch('http://127.0.0.1:3000/api/v1/categories/2', {
 
 ---
 
-### 5. Delete Category
+### 4. Delete Category by ID
 **Endpoint:** `DELETE /categories/{id}`
 
 **Note:** Cannot delete category that has products. Remove or reassign products first.
@@ -272,30 +227,16 @@ fetch('http://127.0.0.1:3000/api/v1/categories/4', {
 
 ## Products API
 
-### 1. List Products
+### 1. Get All Products
 **Endpoint:** `GET /products`
 
 **Query Parameters:**
-- `search` (string) - Search by name
-- `search_description` (string) - Search by description
-- `category_id` (integer) - Filter by category
-- `is_active` (boolean) - Filter by active status
-- `min_price` (decimal) - Filter by minimum price
-- `max_price` (decimal) - Filter by maximum price
-- `min_stock` (integer) - Filter by minimum stock
-- `max_stock` (integer) - Filter by maximum stock
-- `created_from` (date) - Filter by created date from (YYYY-MM-DD)
-- `created_to` (date) - Filter by created date to (YYYY-MM-DD)
-- `updated_from` (date) - Filter by updated date from (YYYY-MM-DD)
-- `updated_to` (date) - Filter by updated date to (YYYY-MM-DD)
-- `sort_by` (string) - Sort by field: `name`, `price`, `stock`, `created_at`, `updated_at`, `id` (default: `id`)
-- `sort_dir` (string) - Sort direction: `asc`, `desc` (default: `desc`)
-- `page` (integer) - Page number (default: `1`)
-- `per_page` (integer) - Items per page (default: `15`)
+- `category_id` (integer, optional) - Filter by category ID
 
 **Example Request:**
 ```bash
-GET http://127.0.0.1:3000/api/v1/products?category_id=2&min_price=5&max_price=20&is_active=true&sort_by=price&sort_dir=asc&page=1&per_page=10
+GET http://127.0.0.1:3000/api/v1/products
+GET http://127.0.0.1:3000/api/v1/products?category_id=2
 ```
 
 **Example Response:**
@@ -325,74 +266,25 @@ GET http://127.0.0.1:3000/api/v1/products?category_id=2&min_price=5&max_price=20
         "updated_at": "2026-06-21T05:19:43.000000Z"
       }
     }
-  ],
-  "pagination": {
-    "current_page": 1,
-    "per_page": 10,
-    "total": 1,
-    "last_page": 1,
-    "from": 1,
-    "to": 1
-  }
+  ]
 }
 ```
 
 **Fetch API Example:**
 ```javascript
-fetch('http://127.0.0.1:3000/api/v1/products?category_id=2&min_price=5&max_price=20&sort_by=price&sort_dir=asc')
+fetch('http://127.0.0.1:3000/api/v1/products')
+  .then(response => response.json())
+  .then(data => console.log(data));
+
+// With category filter
+fetch('http://127.0.0.1:3000/api/v1/products?category_id=2')
   .then(response => response.json())
   .then(data => console.log(data));
 ```
 
 ---
 
-### 2. Get Single Product
-**Endpoint:** `GET /products/{id}`
-
-**Example Request:**
-```bash
-GET http://127.0.0.1:3000/api/v1/products/2
-```
-
-**Example Response:**
-```json
-{
-  "success": true,
-  "data": {
-    "id": 2,
-    "category_id": 2,
-    "name": "Updated Coffee",
-    "slug": "updated-coffee",
-    "description": null,
-    "price": "3.50",
-    "stock": 0,
-    "image": null,
-    "is_active": true,
-    "created_at": "2026-06-14T05:43:03.000000Z",
-    "updated_at": "2026-06-21T05:19:49.000000Z",
-    "category": {
-      "id": 2,
-      "name": "Updated Category",
-      "slug": "updated-category",
-      "description": "Updated description",
-      "is_active": true,
-      "created_at": "2026-06-14T05:41:25.000000Z",
-      "updated_at": "2026-06-21T05:19:43.000000Z"
-    }
-  }
-}
-```
-
-**Fetch API Example:**
-```javascript
-fetch('http://127.0.0.1:3000/api/v1/products/2')
-  .then(response => response.json())
-  .then(data => console.log(data));
-```
-
----
-
-### 3. Create Product
+### 2. Create Product
 **Endpoint:** `POST /products`
 
 **Request Body:**
@@ -486,7 +378,7 @@ fetch('http://127.0.0.1:3000/api/v1/products', {
 
 ---
 
-### 4. Update Product
+### 3. Update Product by ID
 **Endpoint:** `PUT /products/{id}`
 
 **Request Body:**
@@ -574,7 +466,7 @@ fetch('http://127.0.0.1:3000/api/v1/products/2', {
 
 ---
 
-### 5. Delete Product
+### 4. Delete Product by ID
 **Endpoint:** `DELETE /products/{id}`
 
 **Example Request:**
@@ -626,39 +518,4 @@ fetch('http://127.0.0.1:3000/api/v1/products/5', {
   "message": "Server Error",
   "exception": "..."
 }
-```
-
----
-
-## Common Use Cases
-
-### Get all active categories sorted by name
-```bash
-GET http://127.0.0.1:3000/api/v1/categories?is_active=true&sort_by=name&sort_dir=asc
-```
-
-### Get products in a specific price range
-```bash
-GET http://127.0.0.1:3000/api/v1/products?min_price=10&max_price=50
-```
-
-### Get products with low stock
-```bash
-GET http://127.0.0.1:3000/api/v1/products?max_stock=10
-```
-
-### Search products by name or description
-```bash
-GET http://127.0.0.1:3000/api/v1/products?search=coffee
-GET http://127.0.0.1:3000/api/v1/products?search_description=premium
-```
-
-### Get products created this week
-```bash
-GET http://127.0.0.1:3000/api/v1/products?created_from=2026-06-14&created_to=2026-06-21
-```
-
-### Paginated results with sorting
-```bash
-GET http://127.0.0.1:3000/api/v1/products?page=1&per_page=20&sort_by=price&sort_dir=desc
 ```
