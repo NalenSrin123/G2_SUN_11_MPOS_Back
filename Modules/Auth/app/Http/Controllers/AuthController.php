@@ -102,19 +102,32 @@ class AuthController extends Controller
             ], 401);
         }
 
-        try {
-            $this->sendOtpToUser($user);
-        } catch (\Exception $e) {
+        if (config('auth.otp_login_enabled')) {
+            try {
+                $this->sendOtpToUser($user);
+            } catch (\Exception $e) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to send OTP email. Please check your SMTP configuration.',
+                    'error' => $e->getMessage()
+                ], 500);
+            }
+
             return response()->json([
-                'success' => false,
-                'message' => 'Failed to send OTP email. Please check your SMTP configuration.',
-                'error' => $e->getMessage()
-            ], 500);
+                'success' => true,
+                'message' => 'Login successful. OTP sent to your email.'
+            ]);
         }
 
         return response()->json([
             'success' => true,
-            'message' => 'Login successful. OTP sent to your email.'
+            'message' => 'Login successful.',
+            'admin' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'role' => $user->role,
+            ]
         ]);
     }
 
