@@ -9,6 +9,7 @@ use App\Models\Password_reset_token;
 use App\Mail\SendOtpMail;
 use App\Mail\SendPasswordResetMail;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
@@ -102,22 +103,8 @@ class AuthController extends Controller
             ], 401);
         }
 
-        if (config('auth.otp_login_enabled')) {
-            try {
-                $this->sendOtpToUser($user);
-            } catch (\Exception $e) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Failed to send OTP email. Please check your SMTP configuration.',
-                    'error' => $e->getMessage()
-                ], 500);
-            }
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Login successful. OTP sent to your email.'
-            ]);
-        }
+        Auth::login($user);
+        $request->session()->regenerate();
 
         return response()->json([
             'success' => true,
@@ -128,6 +115,40 @@ class AuthController extends Controller
                 'email' => $user->email,
                 'role' => $user->role,
             ]
+        ]);
+    }
+
+    public function me(Request $request)
+    {
+        $user = $request->user();
+
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthenticated.',
+            ], 401);
+        }
+
+        return response()->json([
+            'success' => true,
+            'admin' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'role' => $user->role,
+            ],
+        ]);
+    }
+
+    public function logout(Request $request)
+    {
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Logged out successfully.',
         ]);
     }
 
