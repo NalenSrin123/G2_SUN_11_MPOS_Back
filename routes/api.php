@@ -10,6 +10,7 @@ Route::prefix('v1')->group(function () {
     Route::apiResource('categories', CategoryController::class)->names('category');
     Route::apiResource('products', ProductController::class)->names('product');
 
+    
     Route::get('/tables',         [TableController::class, 'index']);
     Route::get('/tables/{id}',    [TableController::class, 'show']);
     Route::post('/tables',        [TableController::class, 'store']);
