@@ -12,11 +12,23 @@ return [
     |
     */
 
-    'paths' => ['api/*'],
+    'paths' => ['api/*', 'sanctum/csrf-cookie'],
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => array_filter(explode(',', env('FRONTEND_URL', '*'))),
+    /*
+    |--------------------------------------------------------------------------
+    | Allowed Origins
+    |--------------------------------------------------------------------------
+    |
+    | Credentialed requests cannot use a wildcard origin. Keep this list in
+    | sync with your Vue app URLs so Sanctum cookies can be sent correctly.
+    |
+    */
+    'allowed_origins' => array_values(array_filter(array_map(
+        'trim',
+        explode(',', env('FRONTEND_URLS', 'http://localhost:3000,http://localhost:5173'))
+    ))),
 
     'allowed_origins_patterns' => [],
 
@@ -26,6 +38,6 @@ return [
 
     'max_age' => 0,
 
-    'supports_credentials' => false,
+    'supports_credentials' => true,
 
 ];
