@@ -12,11 +12,11 @@ return [
     |
     */
 
-    'paths' => ['api/*', 'sanctum/csrf-cookie'],
+    'paths' => ['api/*'],
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => array_filter(explode(',', env('FRONTEND_URL', ''))),
+    'allowed_origins' => array_filter(explode(',', env('FRONTEND_URL', '*'))),
 
     'allowed_origins_patterns' => [],
 
@@ -26,6 +26,6 @@ return [
 
     'max_age' => 0,
 
-    'supports_credentials' => true,
+    'supports_credentials' => false,
 
 ];

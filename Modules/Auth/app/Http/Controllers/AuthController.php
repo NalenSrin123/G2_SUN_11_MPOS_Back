@@ -103,12 +103,12 @@ class AuthController extends Controller
             ], 401);
         }
 
-        Auth::login($user);
-        $request->session()->regenerate();
+        $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
             'success' => true,
             'message' => 'Login successful.',
+            'token' => $token,
             'admin' => [
                 'id' => $user->id,
                 'name' => $user->name,
@@ -142,9 +142,7 @@ class AuthController extends Controller
 
     public function logout(Request $request)
     {
-        Auth::logout();
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
+        $request->user()->currentAccessToken()->delete();
 
         return response()->json([
             'success' => true,
