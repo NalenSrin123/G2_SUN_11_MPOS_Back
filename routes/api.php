@@ -5,12 +5,13 @@ use Modules\Category\Http\Controllers\CategoryController;
 use Modules\Product\Http\Controllers\ProductController;
 use App\Http\Controllers\TableController;
 use  App\Http\Controllers\OrderController;
+use App\Http\Controllers\OrderItemController;
 
 Route::prefix('v1')->group(function () {
     Route::apiResource('categories', CategoryController::class)->names('category');
     Route::apiResource('products', ProductController::class)->names('product');
 
-    
+
     Route::get('/tables',         [TableController::class, 'index']);
     Route::get('/tables/{id}',    [TableController::class, 'show']);
     Route::post('/tables',        [TableController::class, 'store']);
@@ -21,6 +22,12 @@ Route::prefix('v1')->group(function () {
     Route::post('/orders',        [OrderController::class, 'store']);
     Route::put('/orders/{id}',    [OrderController::class, 'update']);
     Route::delete('/orders/{id}', [OrderController::class, 'destroy']);
+
+    Route::get('/order-items',         [OrderItemController::class, 'index']);
+    Route::get('/order-items/{id}',    [OrderItemController::class, 'show']);
+    Route::post('/order-items',        [OrderItemController::class, 'store']);
+    Route::put('/order-items/{id}',    [OrderItemController::class, 'update']);
+    Route::delete('/order-items/{id}', [OrderItemController::class, 'destroy']);
 });
 
 
