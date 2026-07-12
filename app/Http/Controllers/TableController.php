@@ -27,23 +27,9 @@ class TableController extends Controller
             'table_number' => 'required|integer|unique:restaurant_tables,table_number',
         ]);
 
-        $tableNumber = $request->table_number;
-
-        $qrUrl = config('app.frontend_url') . "/table/{$tableNumber}";
-
-        $qrImage = QrCode::format('svg')
-            ->size(300)
-            ->margin(1)
-            ->generate($qrUrl);
-
-        $path = "qrcodes/table-{$tableNumber}.svg";
-        Storage::disk('public')->put($path, $qrImage);
-
-        $qrImageUrl = Storage::disk('public')->url($path);
-
         $table = RestaurantTable::create([
-            'table_number' => $tableNumber,
-            'qr_code'      => $qrImageUrl,
+            'table_number' => $request->table_number,
+            'qr_code'      => 'https://g2-sun-11-mpos-back-1.onrender.com/api/v1/tables/' . $request->table_number,
             'status'       => 'closed',
         ]);
 
