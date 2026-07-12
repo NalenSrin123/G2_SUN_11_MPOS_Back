@@ -16,7 +16,7 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => explode(',', env('FRONTEND_URL')), 
+    'allowed_origins' => env('FRONTEND_URL') ? explode(',', env('FRONTEND_URL')) : [],
 
     'allowed_origins_patterns' => [],
 
