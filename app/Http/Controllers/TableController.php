@@ -29,10 +29,8 @@ class TableController extends Controller
 
         $tableNumber = $request->table_number;
 
-        // This is what the QR code will actually link to
-        // e.g. a public menu/order page for this table
         $qrUrl = config('app.frontend_url') . "/table/{$tableNumber}";
-        // Generate the QR code as a PNG binary string
+
         $qrImage = QrCode::format('svg')
             ->size(300)
             ->margin(1)
@@ -41,11 +39,11 @@ class TableController extends Controller
         $path = "qrcodes/table-{$tableNumber}.svg";
         Storage::disk('public')->put($path, $qrImage);
 
-        $qrImageUrl = asset('storage/app/public/' . $path);
+        $qrImageUrl = Storage::disk('public')->url($path);
 
         $table = RestaurantTable::create([
             'table_number' => $tableNumber,
-            'qr_code'      => $qrImageUrl, // store the relative path, not the binary
+            'qr_code'      => $qrImageUrl,
             'status'       => 'closed',
         ]);
 
