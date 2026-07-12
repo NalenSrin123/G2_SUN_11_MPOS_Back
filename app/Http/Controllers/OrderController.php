@@ -21,25 +21,6 @@ class OrderController extends Controller
         return response()->json($order);
     }
 
-    // public function store(Request $request)
-    // {
-    //     $request->validate([
-    //         'table_id'       => 'required|exists:restaurant_tables,id',
-    //         'admin_id'       => 'required|exists:admins,id',
-    //         'payment_method' => 'nullable|string',
-    //     ]);
-
-    //     $order = Order::create([
-    //         'table_id'       => $request->table_id,
-    //         'admin_id'       => $request->admin_id,
-    //         'status'         => 'pending',
-    //         'total_amount'   => 0,
-    //         'payment_method' => $request->payment_method,
-    //     ]);
-
-    //     return response()->json($order, 201);
-    // }
-
 
 
     public function store(Request $request)
