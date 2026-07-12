@@ -27,30 +27,29 @@ class TableController extends Controller
             'table_number' => 'required|integer|unique:restaurant_tables,table_number',
         ]);
 
-        // 1. Create a temporary filename using .svg on the public disk
-        $tempPath = "qrcodes/table_{$request->table_number}.svg";
-        $url = url("/table/{$request->table_number}");
-        
-        // Removed ->format('png') because SVG is the native default format
-        $svg = QrCode::size(300)->generate($url);
-        Storage::disk('public')->put($tempPath, $svg);
+        $tableNumber = $request->table_number;
 
-        // 2. Create the table record
+        // This is what the QR code will actually link to
+        // e.g. a public menu/order page for this table
+        $qrUrl = config('app.frontend_url') . "/table/{$tableNumber}";
+        // Generate the QR code as a PNG binary string
+        $qrImage = QrCode::format('svg')
+            ->size(300)
+            ->margin(1)
+            ->generate($qrUrl);
+
+        $path = "qrcodes/table-{$tableNumber}.svg";
+        Storage::disk('public')->put($path, $qrImage);
+
+        $qrImageUrl = asset('storage/app/public/' . $path);
+
         $table = RestaurantTable::create([
-            'table_number' => $request->table_number,
-            'qr_code'      => $tempPath,
+            'table_number' => $tableNumber,
+            'qr_code'      => $qrImageUrl, // store the relative path, not the binary
             'status'       => 'closed',
         ]);
 
-        // 3. Rename the file to use the real database ID
-        $finalPath = "qrcodes/table_{$table->id}.svg";
-        Storage::disk('public')->move($tempPath, $finalPath);
-
-        // 4. Update the DB with the final SVG path
-        $table->qr_code = $finalPath;
-        $table->save();
-
-        return response()->json($table, 201);
+        return response()->json($table);
     }
 
     public function update(Request $request, $id)
